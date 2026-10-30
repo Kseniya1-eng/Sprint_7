@@ -1,20 +1,20 @@
 import allure
 import pytest
-import requests
 
 import data
-from helpers import BASE_URL
+import sender_requests
 
 
 @allure.story('Создание заказа')
 class TestCreateOrder:
 
     @allure.title('Заказ можно создать с цветом: {color}')
-    @pytest.mark.parametrize('color', data.OrderData.colors)
+    @pytest.mark.parametrize('color', [['BLACK'], ['GREY'], ['BLACK', 'GREY'], []],
+                             ids=['black', 'grey', 'both', 'none'])
     def test_create_order_with_different_colors(self, color):
-        payload = data.OrderData.build_payload(color)
+        payload = {**data.ORDER_BODY, 'color': color}
 
-        response = requests.post(f'{BASE_URL}{data.CREATE_ORDER_URL}', json=payload)
+        response = sender_requests.create_order(payload)
 
         assert response.status_code == 201
         assert 'track' in response.json()

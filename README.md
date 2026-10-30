@@ -65,8 +65,9 @@ Sprint_7/
 │   ├── test_login_courier.py
 │   ├── test_create_order.py
 │   └── test_list_orders.py
-├── helpers.py             # методы регистрации и удаления курьера
-├── data.py                # URL, данные и билдеры запросов
+├── sender_requests.py     # методы отправки HTTP-запросов (с @allure.step)
+├── helpers.py             # вспомогательные методы генерации данных и регистрации курьера
+├── data.py                # статичные данные: URL и тела запросов
 ├── conftest.py
 ├── requirements.txt
 ├── allure-report/         # сгенерированный отчёт Allure

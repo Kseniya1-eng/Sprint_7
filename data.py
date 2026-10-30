@@ -1,6 +1,3 @@
-import random
-import string
-
 BASE_URL = 'https://qa-scooter.praktikum-services.ru'
 
 CREATE_COURIER_URL = '/api/v1/courier'
@@ -8,58 +5,37 @@ LOGIN_COURIER_URL = '/api/v1/courier/login'
 CREATE_ORDER_URL = '/api/v1/orders'
 LIST_ORDERS_URL = '/api/v1/orders'
 
+# --- Заказ: базовое тело запроса (без цвета) ---
+ORDER_BODY = {
+    'firstName': 'Иван',
+    'lastName': 'Иванов',
+    'address': 'Москва, ул. Ленина, д. 1',
+    'metroStation': '4',
+    'phone': '+79991112233',
+    'rentTime': 5,
+    'deliveryDate': '2026-11-05',
+    'comment': 'Тестовая доставка',
+}
 
-# метод генерирует строку, состоящую только из букв нижнего регистра
-def generate_random_string(length):
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(length))
+# --- Заказ: варианты с цветом для параметризации ---
+ORDER_BLACK = {**ORDER_BODY, 'color': ['BLACK']}
+ORDER_GREY = {**ORDER_BODY, 'color': ['GREY']}
+ORDER_BOTH = {**ORDER_BODY, 'color': ['BLACK', 'GREY']}
+ORDER_NO_COLOR = {**ORDER_BODY, 'color': []}
 
+# список вариантов заказа для параметризации
+ORDER_VARIANTS = [ORDER_BLACK, ORDER_GREY, ORDER_BOTH, ORDER_NO_COLOR]
 
-class CourierData:
-    """Данные и методы для создания и логина курьера."""
+# --- Курьер: тело запроса без одного из обязательных полей ---
+COURIER_WITHOUT_LOGIN = {'password': 'courier_password', 'firstName': 'courier_name'}
+COURIER_WITHOUT_PASSWORD = {'login': 'courier_login', 'firstName': 'courier_name'}
 
-    @staticmethod
-    def full_payload():
-        """Тело запроса со всеми обязательными полями."""
-        return {
-            'login': generate_random_string(10),
-            'password': generate_random_string(10),
-            'firstName': generate_random_string(10),
-        }
+# --- Логин: тело запроса без одного из полей ---
+LOGIN_WITHOUT_LOGIN = {'password': 'courier_password'}
+LOGIN_WITHOUT_PASSWORD = {'login': 'courier_login'}
 
-    @staticmethod
-    def build_payload(**overrides):
-        """Собирает тело запроса и позволяет убрать/изменить любое поле."""
-        payload = CourierData.full_payload()
-        payload.pop('login')
-        payload.pop('password')
-        payload.pop('firstName')
-        payload.update(overrides)
-        return payload
-
-
-class OrderData:
-    """Данные и методы для создания заказа."""
-
-    # варианты цветов самоката: только BLACK, только GREY, оба или ни одного
-    colors = [
-        ['BLACK'],
-        ['GREY'],
-        ['BLACK', 'GREY'],
-        [],
-    ]
-
-    @staticmethod
-    def build_payload(color):
-        """Собирает тело заказа с переданным списком цветов."""
-        return {
-            'firstName': 'Иван',
-            'lastName': 'Иванов',
-            'address': 'Москва, ул. Ленина, д. 1',
-            'metroStation': '4',
-            'phone': '+79991112233',
-            'rentTime': 5,
-            'deliveryDate': '2026-11-05',
-            'comment': 'Тестовая доставка',
-            'color': color,
-        }
+# --- Ожидаемые сообщения об ошибках ---
+MESSAGE_COURIER_EXISTS = 'Этот логин уже используется. Попробуйте другой.'
+MESSAGE_MISSING_CREATE_DATA = 'Недостаточно данных для создания учетной записи'
+MESSAGE_MISSING_LOGIN_DATA = 'Недостаточно данных для входа'
+MESSAGE_ACCOUNT_NOT_FOUND = 'Учетная запись не найдена'

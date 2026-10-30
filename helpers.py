@@ -1,47 +1,41 @@
-import requests
+import allure
 import random
 import string
 
-BASE_URL = 'https://qa-scooter.praktikum-services.ru'
+import sender_requests
 
 
-# метод регистрации нового курьера возвращает список из логина, пароля и имени
-# если регистрация не удалась, возвращает пустой список
-def register_new_courier_and_return_login_password():
-    # метод генерирует строку, состоящую только из букв нижнего регистра, в качестве параметра передаём длину строки
-    def generate_random_string(length):
-        letters = string.ascii_lowercase
-        random_string = ''.join(random.choice(letters) for i in range(length))
-        return random_string
+@allure.step('Генерация случайной строки')
+def generate_random_string(length):
+    """Возвращает строку из букв нижнего регистра заданной длины."""
+    letters = string.ascii_lowercase
+    random_string = ''.join(random.choice(letters) for i in range(length))
+    return random_string
 
-    # создаём список, чтобы метод мог его вернуть
-    login_pass = []
 
-    # генерируем логин, пароль и имя курьера
-    login = generate_random_string(10)
-    password = generate_random_string(10)
-    first_name = generate_random_string(10)
-
-    # собираем тело запроса
-    payload = {
-        "login": login,
-        "password": password,
-        "firstName": first_name
+@allure.step('Генерация данных нового курьера')
+def generate_courier_data():
+    """Возвращает словарь с логином, паролем и именем нового курьера."""
+    return {
+        'login': generate_random_string(10),
+        'password': generate_random_string(10),
+        'firstName': generate_random_string(10),
     }
 
+
+# метод регистрации нового курьера возвращает список из логина и пароля
+# если регистрация не удалась, возвращает пустой список
+@allure.step('Регистрация нового курьера и получение логина и пароля')
+def register_new_courier_and_return_login_password():
+    # собираем тело запроса
+    payload = generate_courier_data()
+
     # отправляем запрос на регистрацию курьера и сохраняем ответ в переменную response
-    response = requests.post(f'{BASE_URL}/api/v1/courier', data=payload)
+    response = sender_requests.create_courier(payload)
 
     # если регистрация прошла успешно (код ответа 201), добавляем в список логин и пароль курьера
     if response.status_code == 201:
-        login_pass.append(login)
-        login_pass.append(password)
-        login_pass.append(first_name)
+        return [payload['login'], payload['password'], payload['firstName']]
 
-    # возвращаем список
-    return login_pass
-
-
-# метод для удаления курьера
-def delete_courier(courier_id):
-    return requests.delete(f'{BASE_URL}/api/v1/courier/{courier_id}')
+    # возвращаем пустой список
+    return []
